@@ -1,3 +1,7 @@
+## 10.0.1 2019-12-23
+
+* Make full text indexes use the `simple` dictionary (CIRCSTORE-178)
+
 ## 10.0.0 2019-11-28
 
 * Introduces check in / check out patron sessions (CIRCSTORE-147, CIRCSTORE-148, CIRCSTORE-149)

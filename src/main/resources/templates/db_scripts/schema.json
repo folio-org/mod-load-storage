@@ -1,4 +1,14 @@
 {
+  "fullText": {
+    "defaultDictionary": "simple"
+  },
+  "scripts": [
+    {
+      "run": "before",
+      "fromModuleVersion": "10.0.1",
+      "snippet": "DROP INDEX IF EXISTS loan_userid_idx_ft;"
+    }
+  ],
   "tables": [
     {
       "tableName": "loan",
