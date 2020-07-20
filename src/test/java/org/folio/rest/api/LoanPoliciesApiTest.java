@@ -302,6 +302,55 @@ public class LoanPoliciesApiTest extends ApiTests {
   }
 
   @Test
+  public void canCreateARollingLoanPolicyLimitedByFixedDueDateSchedule()
+    throws Exception {
+
+    CompletableFuture<JsonResponse> createCompleted = new CompletableFuture<>();
+
+    UUID id = UUID.randomUUID();
+
+    DateTime from = DateTime.now().minusMonths(3);
+    DateTime to = DateTime.now().plusMonths(3);
+    DateTime dueDate = to.plusDays(15);
+
+    IndividualResource fixedDueDateSchedule =
+      createFixedDueDateSchedule("example limiting schedule", from, to, dueDate);
+
+    JsonObject loanPolicyRequest = LoanPolicyRequestBuilder.emptyPolicy()
+      .withId(id)
+      .withName("Example Loan Policy")
+      .withDescription("An example loan policy")
+      .rolling(2, "Days", fixedDueDateSchedule.getId())
+      .create();
+
+    client.post(loanPolicyStorageUrl(),
+      loanPolicyRequest, StorageTestSuite.TENANT_ID,
+      ResponseHandler.json(createCompleted));
+
+    JsonResponse response = createCompleted.get(5, TimeUnit.SECONDS);
+
+    assertThat(String.format("Failed to create loan policy: %s", response.getBody()),
+      response, matchesCreated());
+
+    JsonObject representation = response.getJson();
+
+    assertThat(representation.getString("id"), is(id.toString()));
+    assertThat(representation.getString("name"), is("Example Loan Policy"));
+    assertThat(representation.getString("description"), is("An example loan policy"));
+    assertThat(representation.getBoolean("loanable"), is(true));
+    assertThat(representation.getBoolean("renewable"), is(false));
+
+    assertThat(representation.containsKey("loansPolicy"), is(true));
+    assertThat(representation.containsKey("metadata"), is(true));
+
+    JsonObject loansPolicy = representation.getJsonObject("loansPolicy");
+
+    assertThat(loansPolicy.getString("profileId"), is("Rolling"));
+    assertThat(loansPolicy.getJsonObject("period"), matchesPeriod(2, "Days"));
+    assertThat(loansPolicy.getString("fixedDueDateScheduleId"), is(fixedDueDateSchedule.getId()));
+  }
+
+  @Test
   public void cannotCreateALoanPolicyWithAdditionalPropertiesInLoanPolicy()
     throws MalformedURLException,
     InterruptedException,

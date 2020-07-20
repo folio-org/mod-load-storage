@@ -140,6 +140,15 @@ public class LoanPolicyRequestBuilder {
     );
   }
 
+  public LoanPolicyRequestBuilder rolling(int duration, String intervalId,
+    String fixedDueDateScheduleId) {
+
+    return new LoanPolicyRequestBuilder(this.id, this.name, this.description,
+      "Rolling", fixedDueDateScheduleId, this.alternateFixedDueDateScheduleId,
+      this.holdsRenewalLoanPeriod,
+      createPeriod(duration, intervalId).mapTo(Period.class), renewalPeriod);
+  }
+
   public LoanPolicyRequestBuilder fixed(String fixedDueDateScheduleId) {
     return new LoanPolicyRequestBuilder(this.id, this.name, description,
       "Fixed", fixedDueDateScheduleId,
