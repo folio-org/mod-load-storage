@@ -115,6 +115,16 @@
           "tOps": "ADD",
           "caseSensitive": false,
           "removeAccents": true
+        },
+        {
+          "fieldName": "identifiers",
+          "arraySubfield" : "value",
+          "arrayModifiers": ["identifierTypeId"]
+        },
+        {
+          "fieldName": "isbn",
+          "sqlExpression" : "normalize_isbns(jsonb->'identifiers')",
+          "sqlExpressionQuery": "normalize_digits($)"
         }
       ]
     },
@@ -328,6 +338,11 @@
     }
   ],
   "scripts": [
+    {
+      "run": "before",
+      "snippetPath": "createIsbnFunctions.sql",
+      "fromModuleVersion": "12.2.0"
+    },
     {
       "run": "before",
       "fromModuleVersion": "10.1.0",

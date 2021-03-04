@@ -1,3 +1,7 @@
+## 12.2.0 IN-PROGRESS
+
+* Introduces normalised ISBN index (CIRCSTORE-186)
+
 ## 12.1.1 2020-10-29
 
 * Upgrade to RMB 31.1.4 and Vert.x 3.9.4 (CIRCSTORE-249), most notable fixes:
