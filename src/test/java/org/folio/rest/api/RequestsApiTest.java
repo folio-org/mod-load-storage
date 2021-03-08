@@ -28,15 +28,12 @@ import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.mockito.ArgumentMatchers.isNull;
 
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -1821,38 +1818,6 @@ public class RequestsApiTest extends ApiTests {
 
     assertThat(allOpenRequests, hasSize(2));
     assertThat(allOpenRequests, hasItems(awaitingPickupRequest, notYetFilledRequest));
-  }
-
-  @Test
-  public void shouldNormalizeIsbnsInRequestItemData() 
-  throws InterruptedException,
-    MalformedURLException,
-    TimeoutException,
-    ExecutionException {
-    UUID isbnIdentifierId = UUID.fromString("8261054f-be78-422d-bd51-4ed9f33c3422");
-
-    final RequestItemSummary nod = new RequestItemSummary("Nod", "565578437802")
-      .addIdentifier(isbnIdentifierId, "978-92-8011-566-9")
-      .addIdentifier(isbnIdentifierId, "976 94 8112 588 2");
-
-    
-    JsonObject representation = createEntity(
-      new RequestRequestBuilder()
-      .recall()
-      .toHoldShelf()
-      .withItem(nod)
-      .create(),
-      requestStorageUrl()).getJson();
-
-    JsonObject item = representation.getJsonObject("item");
-    JsonArray identifiers = item.getJsonArray("identifiers");
-
-    identifiers.forEach(idObject -> {
-      JsonObject lineItem = (JsonObject) idObject;
-      String idNum = lineItem.getString("value");
-      assertThat(idNum.indexOf(" "), is(-1));
-      assertThat(idNum.indexOf("-"), is(-1));
-    });
   }
 
   private RequestDto.RequestDtoBuilder holdShelfOpenRequest() {
