@@ -9,6 +9,7 @@ import org.folio.rest.support.Response;
 import static org.folio.util.StringUtil.urlEncode;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.folio.rest.support.ResponseHandler.json;
 import static org.folio.rest.api.StorageTestSuite.TENANT_ID;
 import org.folio.rest.support.builders.RequestRequestBuilder;
@@ -19,9 +20,11 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
 import org.folio.rest.support.ApiTests;
 import org.folio.rest.support.JsonResponse;
@@ -39,12 +42,16 @@ import org.apache.logging.log4j.Logger;
 public class IsbnNormalizationTest extends ApiTests {
   private static final Logger log = LogManager.getLogger();
   private static final String REQUEST_STORAGE_URL = "/request-storage/requests";
-  private ArrayList<String> requestIds;
      // Interesting Times has two ISBNs: 0552167541, 978-0-552-16754-3
 
-  @BeforeAll
+  @Before
   public void setUp() throws InterruptedException, ExecutionException, TimeoutException, MalformedURLException {
     createRequests();
+  }
+
+  @Test
+  public void canSearchForAnyIsbnWithAdditionalHyphens() {
+    canSort("title = *",      "Interesting Times");
   }
 
   @Test
@@ -93,10 +100,11 @@ public class IsbnNormalizationTest extends ApiTests {
    */
   private void canSort(String cql, String ... expectedTitles) {
     JsonObject searchBody = searchForRequests(cql);
-    matchInstanceTitles(searchBody, expectedTitles);
+    assertThat(searchBody.toString(), not(""));
+    matchItemTitles(searchBody, expectedTitles);
   }
 
-  private void matchInstanceTitles(JsonObject jsonObject, String ... expectedTitles) {
+  private void matchItemTitles(JsonObject jsonObject, String ... expectedTitles) {
     assertThat(jsonObject.toString(), is(""));
   }
 
@@ -123,18 +131,11 @@ public class IsbnNormalizationTest extends ApiTests {
           completed.completeExceptionally(vertxResponse.cause());
         }
         Response response = Response.from(vertxResponse.result());
-
-        log.debug("Received Response: {}: {}", response.getStatusCode());
-        log.debug("Received Response Body: {}", response.getBody());
-
         completed.complete(response);
-
       } catch (Throwable e) {
         completed.completeExceptionally(e);
       }
-
     };
-
   }
 
   static URL requestStorageUrl() throws MalformedURLException {
@@ -150,7 +151,6 @@ public class IsbnNormalizationTest extends ApiTests {
   private ArrayList<String> createRequests() 
     throws InterruptedException, ExecutionException, TimeoutException, MalformedURLException {
     final UUID isbnIdentifierId = UUID.fromString("8261054f-be78-422d-bd51-4ed9f33c3422");
-    
     ArrayList<RequestItemSummary> items = new ArrayList<RequestItemSummary>();
     ArrayList<String> requestIds = new ArrayList<String>();
 
@@ -179,6 +179,8 @@ public class IsbnNormalizationTest extends ApiTests {
         ).getJson();
       requestIds.add(representation.getString("id"));
     }
+
+    
     return requestIds;
   }
 }

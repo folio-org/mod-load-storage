@@ -70,7 +70,8 @@ import io.vertx.sqlclient.RowSet;
   CheckInStorageApiTest.class,
   StaffSlipsMigrationScriptTest.class,
   RequestUpdateTriggerTest.class,
-  JsonPropertyWriterTest.class
+  JsonPropertyWriterTest.class,
+  IsbnNormalizationTest.class
 })
 public class StorageTestSuite {
 
@@ -128,45 +129,6 @@ public class StorageTestSuite {
 
     vertx = Vertx.vertx();
 
-    String useExternalDatabase = System.getProperty(
-      "org.folio.circulation.storage.test.database",
-      "embedded");
-
-    switch (useExternalDatabase) {
-      case "environment":
-        log.info("Using environment settings");
-        break;
-
-      case "external":
-        String postgresConfigPath = System.getProperty(
-          "org.folio.circulation.storage.test.config",
-          "/postgres-conf-local.json");
-
-        log.info(String.format(
-          "Using external configuration settings: '%s'", postgresConfigPath));
-
-        PostgresClient.setConfigFilePath(postgresConfigPath);
-        break;
-
-      case "embedded":
-        log.info("Using embedded PostgreSQL");
-
-        PostgresClient.setIsEmbedded(true);
-        PostgresClient.setEmbeddedPort(NetworkUtils.nextFreePort());
-
-        PostgresClient client = PostgresClient.getInstance(vertx);
-        client.startEmbeddedPostgres();
-        break;
-
-      default:
-        String message = "No understood database choice made."
-          + "Please set org.folio.circulation.storage.test.config"
-          + "to 'external', 'environment' or 'embedded'";
-
-        log.error(message);
-        assert false;
-    }
-
     DeploymentOptions options = new DeploymentOptions();
     options.setConfig(new JsonObject().put("http.port", VERTICLE_PORT));
     startVerticle(options);
@@ -213,7 +175,6 @@ public class StorageTestSuite {
 
     undeploymentComplete.get(20, TimeUnit.SECONDS);
 
-    PostgresClient.stopEmbeddedPostgres();
   }
 
   public static boolean isNotInitialised() {
