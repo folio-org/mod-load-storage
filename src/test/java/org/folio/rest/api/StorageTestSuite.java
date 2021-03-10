@@ -23,6 +23,7 @@ import lombok.SneakyThrows;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import org.folio.postgres.testing.PostgresTesterContainer;
 
 import org.folio.rest.RestVerticle;
 import org.folio.rest.api.loans.LoansAnonymizationApiTest;
@@ -128,7 +129,7 @@ public class StorageTestSuite {
     TimeoutException {
 
     vertx = Vertx.vertx();
-
+    PostgresClient.setPostgresTester(new PostgresTesterContainer());
     DeploymentOptions options = new DeploymentOptions();
     options.setConfig(new JsonObject().put("http.port", VERTICLE_PORT));
     startVerticle(options);
